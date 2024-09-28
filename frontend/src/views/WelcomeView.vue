@@ -1,11 +1,11 @@
 <template>
     <div class="welcome container">
           <div v-if="showLogin">
-            <LoginView @enterChatroom="enterChatroom"></LoginView>
+            <LoginView></LoginView>
             <p>Don't have an account? <span @click= "showLogin = !showLogin">Register Here</span></p>
           </div>
           <div v-else>
-            <RegisterView @enterChatroom="enterChatroom"></RegisterView>
+            <RegisterView></RegisterView>
             <p>Already have an account? <span @click= "showLogin = !showLogin">Login here</span></p>
           </div>
       </div>
