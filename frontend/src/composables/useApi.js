@@ -10,6 +10,7 @@ export const useApi = () =>
 
 export const useApiPrivate = () => {
   const token = localStorage.getItem('token') // Use stored token
+  console.log(token)
   return axios.create({
     baseURL: 'http://localhost:5001',
     headers: {

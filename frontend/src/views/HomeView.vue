@@ -32,8 +32,14 @@ import { useRouter } from 'vue-router';
 
         await authStore.getUser();
         user.value = authStore.userDetail;
-      })
-      return {user};
+      });
+
+      let logout = () => {
+        console.log("clicked")
+        localStorage.removeItem('token');
+        router.push('/');
+      }
+      return {user,logout};
     }
   }
 </script>
