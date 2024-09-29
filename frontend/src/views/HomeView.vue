@@ -1,21 +1,37 @@
 <template>
-  <div v-if="user">
-    <h3>Home</h3>
-    <h4>Username: {{ user.username }}</h4>
-    <h4>email: {{ user.email }}</h4>
-    <button @click="logout">Logout</button>
+  <div>
+    <div>
+      <MainNav></MainNav>
+    </div>
+    <div v-if="user">
+      <h3>Home</h3>
+      <h4>Username: {{ user.username }}</h4>
+      <h4>email: {{ user.email }}</h4>
+      <button @click="logout">Logout</button>
+    </div>
+    <div v-for="blog in blogs" :key="blog._id">
+      <SingleBlog :blog="blog"></SingleBlog>
+    </div>
   </div>
 </template>
 <script>
+import SingleBlog from '../components/SingleBlog.vue'
 import { useAuthStore } from '@/stores/auth';
 import { onMounted, ref } from 'vue';
 import { useRouter } from 'vue-router';
+import MainNav from '../components/MainNav.vue';
+import { useBlogStore } from '@/stores/blog';
 
   export default{
+    components: {
+    SingleBlog,
+      MainNav },
     setup(){
       const authStore = useAuthStore();
       const router = useRouter();
       let user = ref(null);
+      const blogStore = useBlogStore();
+      let blogs = ref(null);
 
       onMounted( async () => {
 
@@ -32,14 +48,17 @@ import { useRouter } from 'vue-router';
 
         await authStore.getUser();
         user.value = authStore.userDetail;
+        console.log(user.value)
+        blogs.value = await blogStore.getBlogs();
       });
+
 
       let logout = () => {
         console.log("clicked")
         localStorage.removeItem('token');
         router.push('/');
       }
-      return {user,logout};
+      return {user,logout,blogs};
     }
   }
 </script>

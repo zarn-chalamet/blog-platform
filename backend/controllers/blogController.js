@@ -1,7 +1,7 @@
 const asyncHandler = require("express-async-handler");
 const BlogModel = require("../models/blogModel");
 const getBlogs = asyncHandler(async (req, res) => {
-  const blogs = await BlogModel.find({ user_id: req.user.id });
+  const blogs = await BlogModel.find();
   res.status(200).json(blogs);
 });
 
