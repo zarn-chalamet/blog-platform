@@ -1,14 +1,14 @@
 <template>
   <div class="blog-form-container">
     <h2>Create Blog</h2>
-    <form class="blog-form">
+    <form class="blog-form" @submit.prevent="createBlog">
       <div class="form-group">
         <label for="title">Title</label>
-        <input type="text" id="title" placeholder="Enter blog title" />
+        <input type="text" id="title" v-model="title" placeholder="Enter blog title" />
       </div>
       <div class="form-group">
         <label for="body">Body</label>
-        <textarea id="body" rows="5" placeholder="Write your blog content here"></textarea>
+        <textarea id="body" rows="5" v-model="textbody" placeholder="Write your blog content here"></textarea>
       </div>
       <button type="submit" class="btn-submit">Create</button>
     </form>
@@ -16,8 +16,33 @@
 </template>
 
 <script>
+import { useBlogStore } from '@/stores/blog';
+import { ref } from 'vue';
+import { useRouter } from 'vue-router';
+
 export default {
-  
+  setup(){
+    const router = useRouter();
+    let title = ref(null);
+    let textbody = ref(null);
+    let err = ref(null);
+    let blogStore = useBlogStore();
+
+    let createBlog = async () => {
+      try {
+        await blogStore.createBlog({
+        title: title.value,
+        body: textbody.value
+      })
+      alert("created successfully!");
+      router.push("/home");
+      } catch (error) {
+        err.value = error;
+      }
+    }
+
+    return { title, textbody, createBlog }
+  }
 };
 </script>
 

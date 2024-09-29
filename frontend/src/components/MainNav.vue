@@ -9,7 +9,7 @@
                 <router-link to="/create-blog">Create</router-link>
             </div>
             <div class="nav-item">
-                Profile
+                <router-link to="/profile">Profile</router-link>
             </div>
         </div>
       </nav>
