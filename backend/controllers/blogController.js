@@ -6,7 +6,7 @@ const getBlogs = asyncHandler(async (req, res) => {
 });
 
 const createBlog = asyncHandler(async (req, res) => {
-  const { title, body } = req.body;
+  const { title, body, photo } = req.body;
   if (!title || !body) {
     res.status(400);
     throw new Error("All fields are necessary");
@@ -14,6 +14,7 @@ const createBlog = asyncHandler(async (req, res) => {
   const blog = await BlogModel.create({
     title,
     body,
+    photo,
     user_id: req.user.id,
   });
 

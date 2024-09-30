@@ -15,6 +15,9 @@ const blogSchema = mongoose.Schema(
       type: String,
       required: [true, "Please write body"],
     },
+    photo: {
+      type: String,
+    },
   },
   {
     timestamps: true,

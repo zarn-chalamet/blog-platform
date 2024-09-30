@@ -5,6 +5,9 @@
           <h3>{{ blog._id }}</h3>
           <h4> {{ blog.title }} </h4>
           <p> {{ blog.body }} </p>
+          <div v-if="blog.photo">
+            <img :src="blog.photo" alt="" class="photo">
+          </div>
         </div>
       </router-link>
       <div v-if="owner">
@@ -42,5 +45,9 @@ export default {
         max-width: 80%;
         background-color: aqua;
         margin-bottom: 20px;
+    }
+    .photo{
+      width: 150px;
+      height: 150px;
     }
 </style>

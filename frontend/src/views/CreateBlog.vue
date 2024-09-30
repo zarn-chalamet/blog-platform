@@ -10,38 +10,52 @@
         <label for="body">Body</label>
         <textarea id="body" rows="5" v-model="textbody" placeholder="Write your blog content here"></textarea>
       </div>
+      <UploadPhoto @selectedImages="selectedImages"></UploadPhoto>
       <button type="submit" class="btn-submit">Create</button>
     </form>
   </div>
 </template>
 
 <script>
+import storeDataToDatabase from '@/composables/photoToDb';
+import UploadPhoto from '../components/UploadPhoto.vue'
 import { useBlogStore } from '@/stores/blog';
 import { ref } from 'vue';
 import { useRouter } from 'vue-router';
 
 export default {
+  components: { UploadPhoto },
   setup(){
     const router = useRouter();
     let title = ref(null);
     let textbody = ref(null);
-    let err = ref(null);
     let blogStore = useBlogStore();
+    let images = ref(null);
+    let {uploadFile,err} = storeDataToDatabase();
+
+
+    let selectedImages = (selectedImagess) => {
+      images.value = selectedImagess;
+    }
 
     let createBlog = async () => {
       try {
+        let downloadUrl = await uploadFile(images.value[0].realFile);
+        console.log("download url")
+        console.log(downloadUrl);
         await blogStore.createBlog({
         title: title.value,
-        body: textbody.value
+        body: textbody.value,
+        photo: downloadUrl
       })
       alert("created successfully!");
       router.push("/home");
       } catch (error) {
-        err.value = error;
+        console.log(error);
       }
     }
 
-    return { title, textbody, createBlog }
+    return { title, textbody, createBlog,selectedImages ,err}
   }
 };
 </script>
