@@ -74,4 +74,17 @@ const currentUser = asyncHandler(async (req, res) => {
   res.json(req.user);
 });
 
-module.exports = { registerUser, loginUser, currentUser };
+const getUserById = asyncHandler(async (req, res) => {
+  const userid = req.params.id;
+
+  const user = await User.findById(userid);
+  if (!user) {
+    res.status(400);
+    throw new Error("User data is not valid");
+  }
+  res
+    .status(200)
+    .json({ _id: user.id, email: user.email, username: user.username });
+});
+
+module.exports = { registerUser, loginUser, currentUser, getUserById };

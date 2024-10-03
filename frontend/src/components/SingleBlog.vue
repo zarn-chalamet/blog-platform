@@ -27,7 +27,7 @@
     <div v-if="showCommentSection" class="comment-section">
       <ul>
         <li v-for="comment in comments" :key="comment._id">
-          <strong>{{ comment.user_id}}:</strong> {{ comment.comment }}
+          <strong>{{ userNamesMap[comment.user_id]?.username || 'Unknown User' }}:</strong> {{ comment.comment }}
         </li>
       </ul>
       <input v-model="newComment" placeholder="Write a comment..." />
@@ -59,14 +59,21 @@ export default {
     const newComment = ref(''); // New comment input
     const isLiked = ref(false); // Track if user liked the blog
     let comments = ref(null);
+    const userNamesMap = ref({});
+    const authStore = useAuthStore();
 
     onMounted(async () =>{
-      const authStore = useAuthStore();
+      
       await authStore.getUser();
       const user = authStore.userDetail;
       if (props.blog.likes.some(like => like.user_id === user.id)) {
         console.log("User has already liked this blog");
         isLiked.value = true;
+      }
+
+      const userIdSet = new Set(props.blog.comments.map(comment => comment.user_id));
+      for (const userId of userIdSet) {
+        userNamesMap.value[userId] = await authStore.getUserById(userId);
       }
 
       comments.value = props.blog.comments;
@@ -89,6 +96,13 @@ export default {
     const toggleCommentSection = () => {
       showCommentSection.value = !showCommentSection.value;
     };
+
+    // const fetchUsernameById = async(user_id) =>{
+    //   const userbyId = await authStore.getUserById(user_id);
+    //   console.log("fetching user name!!")
+    //   console.log(userbyId);
+    //   return userbyId.username;
+    // }
 
     const handleLike = async () => {
       try {
@@ -130,7 +144,8 @@ export default {
       deleteBlog,
       isLiked,
       toggleCommentSection,
-      comments
+      comments,
+      userNamesMap
     };
   },
 };
