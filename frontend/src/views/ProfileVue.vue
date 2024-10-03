@@ -1,13 +1,14 @@
 <template>
   <div>
     <h3>Profile</h3>
+    <button @click="logout">Logout</button>
     <div v-if="user">
       <h4>Username: {{ user.username }}</h4>
       <h4>email: {{ user.email }}</h4>
-      <button @click="logout">Logout</button>
+      
     </div>
     <div v-for="blog in blogs" :key="blog._id">
-      <SingleBlog :blog="blog" :owner="owner"></SingleBlog>
+      <SingleBlog :blog="blog" :owner="owner" @blog-deleted="removeBlog"></SingleBlog>
     </div>
   </div>
 </template>
@@ -36,8 +37,6 @@ export default {
             blogs.value = await blogStore.getBlogs();
 
             blogs.value = blogs.value.filter((blog) => {
-                console.log("blog.user_id:", blog.user_id, "Type:", typeof blog.user_id);
-                console.log("user.value.id:", user.value.id, "Type:", typeof user.value.id);
                 return blog.user_id === user.value.id;
             })
         });
@@ -47,7 +46,11 @@ export default {
             localStorage.removeItem('token');
             router.push('/');
         }
-        return { user,logout,blogs,owner }
+
+        let removeBlog = (deletdBlogId) => {
+          blogs.value = blogs.value.filter(blog => blog._id != deletdBlogId)
+        }
+        return { user,logout,blogs,owner,removeBlog }
     }
 }
 </script>

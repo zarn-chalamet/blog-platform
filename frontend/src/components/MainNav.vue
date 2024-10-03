@@ -1,25 +1,39 @@
 <template>
-    <header>
-      <nav>
-        <div class="logo">
-          <router-link :to="{ name: 'home'}">BLOG PLATFORM</router-link>
-        </div>
-        <div class="nav-actions">
-            <div class="nav-item">
-                <router-link to="/create-blog">Create</router-link>
-            </div>
-            <div class="nav-item">
-                <router-link to="/profile">Profile</router-link>
-            </div>
-        </div>
-      </nav>
+    <header v-if="user">
+
+        <nav>
+          <div class="logo">
+            <router-link :to="{ name: 'home'}">BLOG PLATFORM</router-link>
+          </div>
+          <div class="nav-actions">
+              <div class="nav-item">
+                  <router-link to="/create-blog">Create</router-link>
+              </div>
+              <div class="nav-item">
+                  <router-link to="/profile">Profile</router-link>
+              </div>
+          </div>
+        </nav>
+
     </header>
   </template>
   
 
 <script>
-export default {
+import { useAuthStore } from '@/stores/auth';
+import { onMounted, ref } from 'vue';
 
+export default {
+  setup(){
+    let user = ref(null);
+    onMounted(async()=>{
+      const authStore = useAuthStore();
+      await authStore.getUser();
+      user.value = authStore.userDetail;
+      console.log(user.value)
+    })
+    return {user};
+  }
 }
 </script>
 

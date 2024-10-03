@@ -1,9 +1,5 @@
 <template>
   <div>
-    <div>
-      <MainNav></MainNav>
-    </div>
-    
     <div v-for="blog in blogs" :key="blog._id">
       <SingleBlog :blog="blog"></SingleBlog>
     </div>
@@ -12,13 +8,13 @@
 <script>
 import SingleBlog from '../components/SingleBlog.vue'
 import { onMounted, ref } from 'vue';
-import MainNav from '../components/MainNav.vue';
+
 import { useBlogStore } from '@/stores/blog';
 
   export default{
     components: {
     SingleBlog,
-      MainNav },
+      },
     setup(){
       const blogStore = useBlogStore();
       let blogs = ref(null);
