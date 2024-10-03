@@ -67,4 +67,56 @@ const deleteBlog = asyncHandler(async (req, res) => {
   res.status(200).json(blog);
 });
 
-module.exports = { getBlogs, createBlog, getBlog, updateBlog, deleteBlog };
+const addComment = asyncHandler(async (req, res) => {
+  const { comment } = req.body;
+
+  if (!comment) {
+    res.status(400);
+    throw new Error("Comment cannot be empty");
+  }
+
+  const blog = await BlogModel.findById(req.params.id);
+  if (!blog) {
+    res.status(400);
+    throw new Error("Blog not found");
+  }
+
+  blog.comments.push({ user_id: req.user.id, comment });
+  await blog.save();
+
+  res.status(200).json(blog);
+});
+
+const toggleLike = asyncHandler(async (req, res) => {
+  const blog = await BlogModel.findById(req.params.id);
+
+  if (!blog) {
+    res.status(400);
+    throw new Error("Blog not found");
+  }
+
+  const userAlreadyLiked = blog.likes.some(
+    (like) => like.user_id.toString() === req.user.id
+  );
+
+  if (userAlreadyLiked) {
+    blog.likes = blog.likes.filter(
+      (like) => like.user_id.toString() !== req.user.id
+    );
+  } else {
+    blog.likes.push({ user_id: req.user.id });
+  }
+
+  await blog.save();
+  res.status(200).json(blog);
+});
+
+module.exports = {
+  getBlogs,
+  createBlog,
+  getBlog,
+  updateBlog,
+  deleteBlog,
+  addComment,
+  toggleLike,
+};
