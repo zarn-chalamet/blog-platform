@@ -4,7 +4,7 @@
       <div class="blog-content">
         <div class="blog-text">
           <h3>{{ blog.title }}</h3>
-          <p v-if="!expanded">{{ truncatedBody }} <span>...See More</span></p>
+          <p v-if="!expanded">{{ truncatedBody }} <span @click="toggleExpand" class="see-more">...See More</span></p>
           <p v-else>{{ blog.body }} <span @click.stop="toggleExpand" class="see-less">See Less</span></p>
         </div>
         <div v-if="blog.photo" class="blog-image">
@@ -12,6 +12,28 @@
         </div>
       </div>
     </router-link>
+
+    <!-- Like and Comment Section -->
+    <div class="blog-interactions">
+      <button @click="handleLike" :class="{ liked: isLiked }">
+        {{ blog.likes.length }} Likes
+      </button>
+      <button @click="toggleCommentSection">
+        {{ blog.comments.length }} Comments
+      </button>
+    </div>
+
+    <!-- Comment Section -->
+    <div v-if="showCommentSection" class="comment-section">
+      <ul>
+        <li v-for="comment in comments" :key="comment._id">
+          <strong>{{ comment.user_id}}:</strong> {{ comment.comment }}
+        </li>
+      </ul>
+      <input v-model="newComment" placeholder="Write a comment..." />
+      <button @click="addComment">Submit</button>
+    </div>
+
     <div v-if="owner" class="actions">
       <router-link :to="{ name: 'edit-blog', params: { id: blog._id } }">
         <button class="edit-btn">Edit</button>
@@ -24,14 +46,31 @@
 <script>
 import { useBlogStore } from '@/stores/blog';
 import { useRouter } from 'vue-router';
-import { ref, computed } from 'vue';
+import { ref, computed, onMounted } from 'vue';
+import { useAuthStore } from '@/stores/auth';
 
 export default {
   props: ['blog', 'owner'],
   setup(props, context) {
     const router = useRouter();
     const blogStore = useBlogStore();
-    const expanded = ref(false); // state to track if text is expanded
+    const expanded = ref(false);
+    const showCommentSection = ref(false); // Control visibility of comments
+    const newComment = ref(''); // New comment input
+    const isLiked = ref(false); // Track if user liked the blog
+    let comments = ref(null);
+
+    onMounted(async () =>{
+      const authStore = useAuthStore();
+      await authStore.getUser();
+      const user = authStore.userDetail;
+      if (props.blog.likes.some(like => like.user_id === user.id)) {
+        console.log("User has already liked this blog");
+        isLiked.value = true;
+      }
+
+      comments.value = props.blog.comments;
+    });
 
     // Computed property to get truncated body text
     const truncatedBody = computed(() => {
@@ -42,6 +81,37 @@ export default {
       }
       return sentences.slice(0, maxWords).join('.') + '.';
     });
+
+    const toggleExpand = () => {
+      expanded.value = !expanded.value;
+    };
+
+    const toggleCommentSection = () => {
+      showCommentSection.value = !showCommentSection.value;
+    };
+
+    const handleLike = async () => {
+      try {
+        await blogStore.toggleLike(props.blog._id); // Call toggleLike in store
+        isLiked.value = !isLiked.value; // Toggle like state locally
+      } catch (error) {
+        console.error('Error liking blog:', error.message);
+      }
+    };
+
+    const addComment = async () => {
+      if (!newComment.value.trim()) return; // Prevent empty comment submission
+
+      try {
+        const newAddedComment = await blogStore.addComment(props.blog._id, newComment.value); 
+        newComment.value = ''; 
+        console.log(newAddedComment.comments)
+        comments.value = newAddedComment.comments;
+      } catch (error) {
+        console.error('Error adding comment:', error.message);
+      }
+    };
+
     const deleteBlog = async () => {
       await blogStore.deleteBlog(props.blog._id);
       alert('Deleted successfully!');
@@ -49,7 +119,19 @@ export default {
       router.push('/profile');
     };
 
-    return { expanded, truncatedBody, deleteBlog };
+    return {
+      expanded,
+      truncatedBody,
+      toggleExpand,
+      showCommentSection,
+      newComment,
+      handleLike,
+      addComment,
+      deleteBlog,
+      isLiked,
+      toggleCommentSection,
+      comments
+    };
   },
 };
 </script>
@@ -106,6 +188,45 @@ p {
   border-radius: 8px;
 }
 
+/* Like and Comment Section */
+.blog-interactions {
+  display: flex;
+  gap: 10px;
+  margin-top: 10px;
+}
+
+.blog-interactions button {
+  background-color: #3498db;
+  color: white;
+  border: none;
+  padding: 8px 16px;
+  border-radius: 6px;
+  cursor: pointer;
+}
+
+.blog-interactions button.liked {
+  background-color: #e74c3c; /* Change color when liked */
+}
+
+/* Comment Section */
+.comment-section {
+  margin-top: 10px;
+}
+
+.comment-section ul {
+  list-style-type: none;
+  padding: 0;
+}
+
+.comment-section input {
+  width: 100%;
+  padding: 8px;
+  margin-top: 10px;
+  border-radius: 6px;
+  border: 1px solid #ccc;
+}
+
+/* Buttons */
 .actions {
   margin-top: 15px;
   display: flex;
@@ -136,7 +257,6 @@ p {
   background-color: #c0392b;
 }
 
-/* Styles for See More/See Less */
 .see-more,
 .see-less {
   color: #3498db;

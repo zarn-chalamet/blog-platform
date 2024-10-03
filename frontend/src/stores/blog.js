@@ -68,6 +68,42 @@ export const useBlogStore = defineStore('blog', {
         console.error('Error deleting blog:', error.message)
         throw error
       }
+    },
+
+    async addComment(id, comment) {
+      try {
+        const { data } = await useApiPrivate().post(`/api/blogs/${id}/comment`, {
+          comment
+        })
+
+        // Update the specific blog's comments in the state (optional)
+        const blogIndex = this.blogs.findIndex((blog) => blog._id === id)
+        if (blogIndex !== -1) {
+          this.blogs[blogIndex].comments.push(data) // Assuming the API returns the updated comment
+        }
+
+        return data
+      } catch (error) {
+        console.error('Error adding comment:', error.message)
+        throw error
+      }
+    },
+
+    async toggleLike(id) {
+      try {
+        const { data } = await useApiPrivate().post(`/api/blogs/${id}/like`)
+
+        // Update the specific blog's likes in the state (optional)
+        const blogIndex = this.blogs.findIndex((blog) => blog._id === id)
+        if (blogIndex !== -1) {
+          this.blogs[blogIndex].likes = data.likes // Assuming the API returns the updated likes
+        }
+
+        return data
+      } catch (error) {
+        console.error('Error toggling like:', error.message)
+        throw error
+      }
     }
   }
 })
